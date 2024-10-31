@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nombre Animado con Música</title>
+  <style>
+    /* Fondo animado con GIF */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url('URL_DEL_GIF_FONDO'); /* Cambia esta URL por el GIF de fondo que prefieras */
+      background-size: cover;
+      font-family: 'Comic Sans MS', cursive;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      position: relative;
+      color: #ff007f;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%; /* Ocupa el 90% del ancho en móviles */
+    }
+
+    .name {
+      font-size: 3em;
+      font-weight: bold;
+      color: #ff69b4;
+      position: relative;
+      animation: glow 2s infinite alternate;
+      transform-origin: center;
+      transition: transform 0.1s ease;
+      cursor: pointer; /* Cambia el cursor al pasar por encima */
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff69b4, 0 0 30px #ff69b4; }
+      100% { text-shadow: 0 0 20px #ff1493, 0 0 30px #ff1493, 0 0 40px #ff1493; }
+    }
+
+    /* Estilos para dispositivos más pequeños */
+    @media (max-width: 600px) {
+      .name {
+        font-size: 2.5em; /* Reduce el tamaño de la fuente en móviles */
+      }
+    }
+
+    @media (max-width: 400px) {
+      .name {
+        font-size: 2em; /* Aún más pequeño en pantallas muy estrechas */
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Música de fondo -->
+  <audio id="music" src="maccccc4.m4a" loop></audio> <!-- Cambia 'URL_DE_TU_MUSICA' por el enlace de tu música -->
+
+  <div class="container">
+    <div class="name" id="animatedText">"A"</div>
+  </div>
+
+  <script>
+    const audio = document.getElementById('music');
+    const text = document.getElementById('animatedText');
+
+    // Configuración del contexto de audio
+    let audioContext;
+    let analyser;
+    let dataArray;
+
+    function initializeAudio() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaElementSource(audio);
+
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      analyser.fftSize = 256;
+
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      animateText(); // Comienza la animación del texto
+    }
+
+    // Función para animar el texto según la frecuencia de la música
+    function animateText() {
+      analyser.getByteFrequencyData(dataArray);
+      const bass = dataArray.slice(0, dataArray.length / 4).reduce((a, b) => a + b) / (dataArray.length / 4);
+
+      // Ajusta la escala según el nivel de frecuencia de los bajos
+      const scale = 1 + bass / 255;
+      text.style.transform = `scale(${scale})`;
+
+      requestAnimationFrame(animateText);
+    }
+
+    // Iniciar música y animación al hacer clic en el nombre
+    text.addEventListener('click', () => {
+      audio.play();
+      if (!audioContext) {
+        initializeAudio();
+      }
+      audioContext.resume();  // Resumir audio para habilitar el contexto
+    });
+  </script>
+</body>
+</html>
